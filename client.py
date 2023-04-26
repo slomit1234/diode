@@ -1,34 +1,29 @@
 import socket
 import hashlib
 
-# Define the host and port for proxy 1
-PROXY1_HOST = 'localhost'
-PROXY1_PORT = 8000
-
-# Define the buffer size for sending/receiving data
-BUFFER_SIZE = 1024
-
-# Define the MD5 hash function
-md5 = hashlib.md5()
-
-# Select a file to send
-file_path = '//home/magshimim/Downloads/diode2/test.txt'
-with open(file_path, 'rb') as f:
-    file_data = f.read()
-    md5.update(file_data)
-
-# Convert the MD5 hash to a string
-md5_hash = md5.hexdigest()
-
-# Create a socket for proxy 1
-proxy1_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-proxy1_socket.connect((PROXY1_HOST, PROXY1_PORT))
-
-# Send the file to proxy 1
-proxy1_socket.sendall(file_data)
-
-# Close the socket for proxy 1
-proxy1_socket.close()
-
-# Print the MD5 hash of the file
-print(f'MD5 hash: {md5_hash}')
+class Client:
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.connect(("localhost", 8081))
+        filename = '//home/magshimim/Downloads/diode/test.txt'
+        
+        print(f"Connected to server {self.host}:{self.port}.")
+        
+    def send_file(self, filename):
+        # Read file contents
+        with open(filename, "rb") as f:
+            file_data = f.read()
+        
+        # Send file to proxy 1
+        self.sock.sendall(file_data)
+        print("File sent to server.")
+        
+        # Receive MD5 hash from server
+        md5_hash = self.sock.recv(1024).decode()
+        print(f"MD5 hash of file received from server: {md5_hash}")
+        
+if __name__ == "__main__":
+    client = Client("localhost", 8080)
+    client.send_file("test.txt")
