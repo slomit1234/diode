@@ -1,43 +1,40 @@
 import socket
 import hashlib
 
-# Define the host and port for proxy 2
-PROXY2_HOST = 'localhost'
-PROXY2_PORT = 8001
+class Server:
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.bind((self.host, self.port))
+        self.sock.listen(1)
+        
+        print(f"Server listening on {self.host}:{self.port}...")
 
-# Define the buffer size for sending/receiving data
-BUFFER_SIZE = 1024
+    def run(self):
+        while True:
+            conn, addr = self.sock.accept()
+            print(f"Client connected: {addr}")
 
-# Define the MD5 hash function
-md5 = hashlib.md5()
+            # Receive file from client
+            file_data = conn.recv(2048).decode('utf-8')
+            print(file_data)
+            
+            print("File received from client.")
+            
+            # Calculate MD5 hash of file
+            md5_hash = hashlib.md5(allf).hexdigest()
+            print(f"MD5 hash of file: {md5_hash}")
+            
+            # Forward file to proxy 2 through the diode
+            diode_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            diode_sock.sendto(allf, ("localhost", 8081))
+            print("File forwarded to proxy 2 through the diode.")
+            
+            #conn.sendall(md5_hash.encode())
+            #print(f"MD5 hash sent to client: {md5_hash}")
+            
+if __name__ == "__main__":
+    server = Server("localhost", 8080)
+    server.run()
 
-# Select a file to receive
-file_path = '/path/to/save/file'
-
-# Create a socket for the end user
-user_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-user_socket.connect((PROXY2_HOST, PROXY2_PORT))
-
-# Receive the file from the end user
-file_data = user_socket.recv(BUFFER_SIZE)
-with open(file_path, 'wb') as f:
-    while file_data:
-        md5.update(file_data)
-        f.write(file_data)
-        file_data = user_socket.recv(BUFFER_SIZE)
-
-# Convert the MD5 hash to a string
-md5_hash = md5.hexdigest()
-
-# Close the socket for the end user
-user_socket.close()
-
-# Check the MD5 hash of the file received by the end user
-with open(file_path, 'rb') as f:
-    file_data = f.read()
-    received_md5_hash = hashlib.md5(file_data).hexdigest()
-
-if md5_hash == received_md5_hash:
-    print('MD5 hash check passed.')
-else:
-    print('MD5 hash check failed.')

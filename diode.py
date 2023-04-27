@@ -14,19 +14,13 @@ class Diode:
             data, addr = self.sock.recvfrom(1024)
             print(f"Data received from {addr}: {data}")
             
-            try:
-               # Forward data to proxy 2
-                proxy_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                proxy_sock.connect(("localhost", 8081
-                proxy_sock.sendall(data)
-                print("Data forwarded to proxy 2.")
-            
-            except Exception as e:
-                print(e);
-            
-         
-            
+            # Forward data to proxy 2
+            proxy_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            proxy_sock.connect(("localhost", 8084))
+            proxy_sock.sendall(data)
+            print("Data forwarded to proxy 2.")
             
 if __name__ == "__main__":
     diode = Diode("localhost", 8081)
     diode.run()
+
